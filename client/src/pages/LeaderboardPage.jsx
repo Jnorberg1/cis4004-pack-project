@@ -13,13 +13,15 @@ export default function LeaderboardPage() {
   }, []);
 
   return (
-    <div style={{ padding: "20px" }}>
+    <section className="page">
       <h1>Leaderboard</h1>
-      {leaders.map((entry, index) => (
-        <div key={entry._id || index}>
-          #{index + 1} Shirt ID: {entry._id} | Pull Count: {entry.pullCount}
-        </div>
-      ))}
-    </div>
+      <div className="list">
+        {leaders.map((entry, index) => (
+          <div key={entry._id || index} className="list-item">
+            #{index + 1} Shirt ID: {entry._id} | Pull Count: {entry.pullCount}
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

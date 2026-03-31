@@ -18,22 +18,25 @@ export default function Navbar() {
   };
 
   return (
-    <nav style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-      <Link to="/">Home</Link> | <Link to="/packs">Packs</Link> |{" "}
-      <Link to="/collection">My Collection</Link> |{" "}
-      <Link to="/leaderboard">Leaderboard</Link> |{" "}
-      {!user && <Link to="/login">Login</Link>}{" "}
-      {!user && <>| <Link to="/register">Register</Link></>}
-      {user?.role === "admin" && (
-        <>
-          {" "} | <Link to="/admin">Admin</Link>
-        </>
-      )}
-      {user && (
-        <>
-          {" "} | <button onClick={logout}>Logout</button>
-        </>
-      )}
+    <nav className="navbar">
+      <div className="navbar-brand">
+        <Link to="/">PackThreads</Link>
+      </div>
+
+      <div className="navbar-links">
+        <Link to="/">Home</Link>
+        <Link to="/packs">Packs</Link>
+        <Link to="/collection">My Collection</Link>
+        <Link to="/leaderboard">Leaderboard</Link>
+        {!user && <Link to="/login">Login</Link>}
+        {!user && <Link to="/register">Register</Link>}
+        {user?.role === "admin" && <Link to="/admin">Admin</Link>}
+        {user && (
+          <button type="button" className="btn-secondary" onClick={logout}>
+            Logout
+          </button>
+        )}
+      </div>
     </nav>
   );
 }

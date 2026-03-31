@@ -28,18 +28,23 @@ export default function CollectionPage() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <section className="page">
       <h1>My Collection</h1>
-      {collection.map((item) => (
-        <div key={item._id} style={{ marginBottom: "12px" }}>
-          <strong>{item.shirt?.name}</strong> -{" "}
-          {item.isFavorite ? "Favorite" : "Not Favorite"}
-          <br />
-          <button onClick={() => toggleFavorite(item._id)}>
-            Toggle Favorite
-          </button>
-        </div>
-      ))}
-    </div>
+      <div className="list">
+        {collection.map((item) => (
+          <div key={item._id} className="card collection-item">
+            <strong>{item.shirt?.name}</strong>
+            <span>{item.isFavorite ? "Favorite" : "Not Favorite"}</span>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => toggleFavorite(item._id)}
+            >
+              Toggle Favorite
+            </button>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

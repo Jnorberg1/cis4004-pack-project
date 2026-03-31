@@ -23,22 +23,34 @@ export default function PacksPage() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <section className="page">
       <h1>Packs</h1>
-      {packs.length === 0 && <p>No packs yet.</p>}
+      {packs.length === 0 && <p className="card">No packs yet.</p>}
 
-      {packs.map((pack) => (
-        <div key={pack._id} style={{ marginBottom: "20px" }}>
+      <div className="grid">
+        {packs.map((pack) => (
+          <div key={pack._id} className="card pack-card">
           <h3>{pack.name}</h3>
           <p>{pack.description}</p>
-          <button onClick={() => handleOpenPack(pack._id)}>Open Pack</button>
-        </div>
-      ))}
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => handleOpenPack(pack._id)}
+            >
+              Open Pack
+            </button>
+          </div>
+        ))}
+      </div>
 
       <h2>Latest Pull</h2>
-      {results.map((shirt) => (
-        <div key={shirt._id}>{shirt.name}</div>
-      ))}
-    </div>
+      <div className="list">
+        {results.map((shirt) => (
+          <div key={shirt._id} className="list-item">
+            {shirt.name}
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
