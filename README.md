@@ -33,6 +33,40 @@ This repository is meant for collaborative development. Everyone on the team sho
 - commit often with clear messages
 - communicate before editing the same files
 
+## Quick Start
+
+1. Create your server env file:
+
+```bash
+cp server/.env.example server/.env
+```
+
+If you do not have an example file, create `server/.env` manually with:
+
+```env
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+```
+
+2. Install dependencies:
+
+```bash
+npm install --prefix server
+npm install --prefix client
+```
+
+3. Start frontend + backend together:
+
+```bash
+./start-dev.sh
+```
+
+This starts:
+
+- backend on port `5000`
+- frontend on Vite default port (usually `5173`; if busy, Vite picks the next one)
+- frontend bound to `0.0.0.0` so it is reachable from WSL network interfaces
+
 ## Folder Structure
 
 ```text

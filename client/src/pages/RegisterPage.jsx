@@ -19,27 +19,23 @@ export default function RegisterPage() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <section className="page card auth-card">
       <h1>Register</h1>
-      <form onSubmit={handleSubmit}>
+      <form className="form" onSubmit={handleSubmit}>
         <input
           type="text"
           placeholder="Username"
           value={form.username}
           onChange={(e) => setForm({ ...form, username: e.target.value })}
         />
-        <br />
-        <br />
         <input
           type="password"
           placeholder="Password"
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
         />
-        <br />
-        <br />
-        <button type="submit">Create Account</button>
+        <button type="submit" className="btn-primary">Create Account</button>
       </form>
-    </div>
+    </section>
   );
 }

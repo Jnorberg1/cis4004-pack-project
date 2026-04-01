@@ -6,43 +6,22 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
-      try {
-        const res = await api.get("/leaderboard");
-        setLeaders(res.data);
-      } catch (error) {
-        console.error("Error fetching leaderboard:", error);
-      }
+      const res = await api.get("/leaderboard");
+      setLeaders(res.data);
     };
-
     fetchLeaderboard();
   }, []);
 
   return (
-    <div style={{ padding: "20px" }}>
+    <section className="page">
       <h1>Leaderboard</h1>
-
-      {leaders.length === 0 && <p>No leaderboard data yet.</p>}
-
-      {leaders.map((entry, index) => (
-        <div
-          key={entry._id || index}
-          style={{
-            border: "1px solid #ccc",
-            padding: "12px",
-            marginBottom: "12px",
-          }}
-        >
-          <h3>
-            #{index + 1} {entry.shirtName}
-          </h3>
-          <p><strong>Brand:</strong> {entry.brand}</p>
-          <p><strong>Rarity:</strong> {entry.rarityName || "Unknown"}</p>
-          <p><strong>Value Score:</strong> {entry.valueScore}</p>
-          <p><strong>Total Pulls:</strong> {entry.pullCount}</p>
-          <p><strong>Favorites:</strong> {entry.favoriteCount}</p>
-          <p>{entry.description}</p>
-        </div>
-      ))}
-    </div>
+      <div className="list">
+        {leaders.map((entry, index) => (
+          <div key={entry._id || index} className="list-item">
+            #{index + 1} Shirt ID: {entry._id} | Pull Count: {entry.pullCount}
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

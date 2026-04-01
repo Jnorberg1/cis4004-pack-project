@@ -10,17 +10,19 @@ import Navbar from "./components/Navbar";
 
 export default function App() {
   return (
-    <div>
+    <div className="app-shell">
       <Navbar />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/packs" element={<PacksPage />} />
-        <Route path="/collection" element={<CollectionPage />} />
-        <Route path="/leaderboard" element={<LeaderboardPage />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-      </Routes>
+      <main className="page-container">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/packs" element={<PacksPage />} />
+          <Route path="/collection" element={<CollectionPage />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+        </Routes>
+      </main>
     </div>
   );
 }
