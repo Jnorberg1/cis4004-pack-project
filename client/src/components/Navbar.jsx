@@ -28,6 +28,7 @@ export default function Navbar() {
         <Link to="/packs">Packs</Link>
         <Link to="/collection">My Collection</Link>
         <Link to="/leaderboard">Leaderboard</Link>
+        <Link to="/trading">Trading</Link>
         {!user && <Link to="/login">Login</Link>}
         {!user && <Link to="/register">Register</Link>}
         {user?.role === "admin" && <Link to="/admin">Admin</Link>}

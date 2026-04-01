@@ -5,6 +5,7 @@ import HomePage from "./pages/HomePage";
 import PacksPage from "./pages/PacksPage";
 import CollectionPage from "./pages/CollectionPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
+import TradingPage from "./pages/TradingPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import Navbar from "./components/Navbar";
 
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/packs" element={<PacksPage />} />
           <Route path="/collection" element={<CollectionPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/trading" element={<TradingPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </main>

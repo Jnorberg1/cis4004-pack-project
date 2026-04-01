@@ -1,6 +1,45 @@
 import CollectionEntry from "../models/CollectionEntry.js";
+import User from "../models/User.js";
 import "../models/Rarity.js";
 import "../models/Category.js";
+
+export const getCollectionByUsername = async (req, res) => {
+  try {
+    const { username } = req.params;
+    const user = await User.findOne({
+      username: username.trim(),
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user._id.toString() === req.user.id) {
+      return res.status(400).json({
+        message: "Use My Collection for your own items",
+      });
+    }
+
+    const items = await CollectionEntry.find({ user: user._id })
+      .populate({
+        path: "shirt",
+        populate: [
+          { path: "rarity" },
+          { path: "categories" },
+        ],
+      })
+      .populate("pack")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      user: { id: user._id, username: user.username },
+      items,
+    });
+  } catch (error) {
+    console.error("Public collection fetch error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
 
 export const getMyCollection = async (req, res) => {
   try {

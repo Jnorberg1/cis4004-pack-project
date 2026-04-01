@@ -10,6 +10,7 @@ import {
   Category,
   Rarity,
   PackOpeningHistory,
+  Trade,
 } from "./models/index.js";
 
 dotenv.config();
@@ -19,6 +20,7 @@ const seedData = async () => {
     await connectDB();
 
     await PackOpeningHistory.deleteMany({});
+    await Trade.deleteMany({});
     await CollectionEntry.deleteMany({});
     await Pack.deleteMany({});
     await Shirt.deleteMany({});
