@@ -1,42 +1,53 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
+  const navigate = useNavigate();
+
   let user = null;
+  let token = null;
 
   try {
     const storedUser = localStorage.getItem("user");
+    token = localStorage.getItem("token");
     user = storedUser ? JSON.parse(storedUser) : null;
   } catch (error) {
     console.error("Invalid user data in localStorage:", error);
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
   }
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    window.location.href = "/login";
+    navigate("/login");
+    window.location.reload();
   };
 
   return (
-    <nav className="navbar">
-      <div className="navbar-brand">
-        <Link to="/">PackThreads</Link>
-      </div>
-
-      <div className="navbar-links">
-        <Link to="/">Home</Link>
-        <Link to="/packs">Packs</Link>
-        <Link to="/collection">My Collection</Link>
-        <Link to="/leaderboard">Leaderboard</Link>
-        {!user && <Link to="/login">Login</Link>}
-        {!user && <Link to="/register">Register</Link>}
-        {user?.role === "admin" && <Link to="/admin">Admin</Link>}
-        {user && (
-          <button type="button" className="btn-secondary" onClick={logout}>
-            Logout
-          </button>
-        )}
-      </div>
+    <nav style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
+      <Link to="/">Home</Link> | <Link to="/packs">Packs</Link> |{" "}
+      <Link to="/collection">My Collection</Link> |{" "}
+      <Link to="/leaderboard">Leaderboard</Link>{" "}
+      {!token && (
+        <>
+          | <Link to="/login">Login</Link> | <Link to="/register">Register</Link>
+        </>
+      )}
+      {token && (
+        <>
+          {" "} | <span>Logged in as: {user?.username || "User"}</span>
+        </>
+      )}
+      {user?.role === "admin" && (
+        <>
+          {" "} | <Link to="/admin">Admin</Link>
+        </>
+      )}
+      {token && (
+        <>
+          {" "} | <button onClick={logout}>Logout</button>
+        </>
+      )}
     </nav>
   );
 }
