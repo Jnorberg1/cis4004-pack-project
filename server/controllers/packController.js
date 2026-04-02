@@ -9,7 +9,10 @@ const getRandomItems = (items, count) => {
 
 export const getAllPacks = async (req, res) => {
   try {
-    const packs = await Pack.find().populate("shirtPool");
+    const packs = await Pack.find().populate({
+      path: "shirtPool",
+      populate: { path: "rarity" },
+    });
     res.json(packs);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -19,7 +22,10 @@ export const getAllPacks = async (req, res) => {
 export const openPack = async (req, res) => {
   try {
     const { packId } = req.params;
-    const pack = await Pack.findById(packId).populate("shirtPool");
+    const pack = await Pack.findById(packId).populate({
+      path: "shirtPool",
+      populate: { path: "rarity" },
+    });
 
     if (!pack) {
       return res.status(404).json({ message: "Pack not found" });

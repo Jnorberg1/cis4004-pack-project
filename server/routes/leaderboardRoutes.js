@@ -52,6 +52,7 @@ router.get("/", async (req, res) => {
           description: "$shirt.description",
           valueScore: "$shirt.valueScore",
           rarityName: "$rarity.name",
+          imageUrl: "$shirt.image",
         },
       },
     ]);

@@ -1,9 +1,11 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from "react";
 import api from "../api/api";
+import ShirtImage from "../components/ShirtImage";
 
 export default function AdminDashboard() {
   const [shirts, setShirts] = useState([]);
+  const [collectionEntries, setCollectionEntries] = useState([]);
   const [categories, setCategories] = useState([]);
   const [rarities, setRarities] = useState([]);
   const [message, setMessage] = useState("");
@@ -23,15 +25,17 @@ export default function AdminDashboard() {
 
   const loadAdminData = async () => {
     try {
-      const [shirtsRes, categoriesRes, raritiesRes] = await Promise.all([
+      const [shirtsRes, categoriesRes, raritiesRes, entriesRes] = await Promise.all([
         api.get("/admin/shirts"),
         api.get("/admin/categories"),
         api.get("/admin/rarities"),
+        api.get("/admin/collection-entries"),
       ]);
 
       setShirts(shirtsRes.data);
       setCategories(categoriesRes.data);
       setRarities(raritiesRes.data);
+      setCollectionEntries(entriesRes.data);
       setMessage("");
     } catch (error) {
       console.error("Admin fetch error:", error);
@@ -114,6 +118,26 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleRemoveCollectionEntry = async (entryId) => {
+    if (
+      !window.confirm(
+        "Remove this shirt from that user's collection? This cannot be undone."
+      )
+    ) {
+      return;
+    }
+    try {
+      await api.delete(`/admin/collection-entries/${entryId}`);
+      setMessage("Collection entry removed.");
+      loadAdminData();
+    } catch (error) {
+      console.error("Remove collection entry error:", error);
+      setMessage(
+        error.response?.data?.message || "Could not remove collection entry."
+      );
+    }
+  };
+
   const handleCancelEdit = () => {
     setEditingId(null);
     setForm(emptyForm);
@@ -169,13 +193,21 @@ export default function AdminDashboard() {
           </div>
 
           <div style={{ marginBottom: "10px" }}>
-            <label>Image URL</label>
+            <label>
+              Image URL <span style={{ fontWeight: 400 }}>(Imgur direct link, e.g. https://i.imgur.com/… .jpg)</span>
+            </label>
             <br />
             <input
               type="text"
+              placeholder="https://i.imgur.com/… .jpg or .png"
               value={form.image}
               onChange={(e) => setForm({ ...form, image: e.target.value })}
             />
+            {form.image?.trim() && (
+              <div style={{ marginTop: "8px" }}>
+                <ShirtImage src={form.image} alt="Preview" />
+              </div>
+            )}
           </div>
 
           <div style={{ marginBottom: "10px" }}>
@@ -251,6 +283,9 @@ export default function AdminDashboard() {
               marginBottom: "12px",
             }}
           >
+            <div className="collection-item-row">
+              <ShirtImage src={shirt.image} alt={shirt.name} />
+              <div>
             <h3>{shirt.name}</h3>
             <p><strong>Brand:</strong> {shirt.brand}</p>
             <p><strong>Rarity:</strong> {shirt.rarity?.name || "Unknown"}</p>
@@ -273,6 +308,58 @@ export default function AdminDashboard() {
             >
               Delete Shirt
             </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginTop: "32px" }}>
+        <h2>User collections (pulls)</h2>
+        <p style={{ marginBottom: "12px", maxWidth: "640px" }}>
+          Remove individual pulls from any account—for example duplicates or items
+          that should not stay in someone&apos;s collection. This does not delete
+          the shirt from the catalog; use &quot;Delete Shirt&quot; above for that.
+        </p>
+
+        {collectionEntries.length === 0 && <p>No collection entries yet.</p>}
+
+        {collectionEntries.map((entry) => (
+          <div
+            key={entry._id}
+            style={{
+              border: "1px solid #ccc",
+              padding: "12px",
+              marginBottom: "12px",
+            }}
+          >
+            <div className="collection-item-row">
+              <ShirtImage
+                src={entry.shirt?.image}
+                alt={entry.shirt?.name || "Shirt"}
+                size="sm"
+              />
+              <div>
+                <p>
+                  <strong>User:</strong> {entry.user?.username || "Unknown"}
+                </p>
+                <p>
+                  <strong>Shirt:</strong> {entry.shirt?.name || "Unknown"}
+                </p>
+                <p>
+                  <strong>Pack:</strong> {entry.pack?.name || "—"}
+                </p>
+                <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+                  Entry ID: {entry._id}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveCollectionEntry(entry._id)}
+                >
+                  Remove from user collection
+                </button>
+              </div>
+            </div>
           </div>
         ))}
       </div>

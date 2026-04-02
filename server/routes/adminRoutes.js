@@ -5,14 +5,25 @@ import Shirt from "../models/Shirt.js";
 import Pack from "../models/Pack.js";
 import Category from "../models/Category.js";
 import Rarity from "../models/Rarity.js";
+import CollectionEntry from "../models/CollectionEntry.js";
 
 const router = express.Router();
 
 router.use(authMiddleware, adminMiddleware);
 
+const shirtPayloadFromBody = (body) => ({
+  name: body.name,
+  brand: body.brand,
+  description: body.description ?? "",
+  image: typeof body.image === "string" ? body.image.trim() : "",
+  rarity: body.rarity,
+  categories: Array.isArray(body.categories) ? body.categories : [],
+  valueScore: Number(body.valueScore) || 0,
+});
+
 router.post("/shirts", async (req, res) => {
   try {
-    const shirt = await Shirt.create(req.body);
+    const shirt = await Shirt.create(shirtPayloadFromBody(req.body));
     const populated = await Shirt.findById(shirt._id).populate("rarity categories");
     res.status(201).json(populated);
   } catch (error) {
@@ -31,9 +42,14 @@ router.get("/shirts", async (req, res) => {
 
 router.put("/shirts/:id", async (req, res) => {
   try {
-    const shirt = await Shirt.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    }).populate("rarity categories");
+    const shirt = await Shirt.findByIdAndUpdate(
+      req.params.id,
+      shirtPayloadFromBody(req.body),
+      { new: true, runValidators: true }
+    ).populate("rarity categories");
+    if (!shirt) {
+      return res.status(404).json({ message: "Shirt not found" });
+    }
     res.json(shirt);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -100,6 +116,35 @@ router.get("/rarities", async (req, res) => {
   try {
     const rarities = await Rarity.find().sort({ weight: 1 });
     res.json(rarities);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.get("/collection-entries", async (req, res) => {
+  try {
+    const entries = await CollectionEntry.find()
+      .populate("user", "username role")
+      .populate({
+        path: "shirt",
+        populate: [{ path: "rarity" }, { path: "categories" }],
+      })
+      .populate("pack")
+      .sort({ createdAt: -1 })
+      .limit(500);
+    res.json(entries);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.delete("/collection-entries/:id", async (req, res) => {
+  try {
+    const entry = await CollectionEntry.findByIdAndDelete(req.params.id);
+    if (!entry) {
+      return res.status(404).json({ message: "Collection entry not found" });
+    }
+    res.json({ message: "Removed from user collection" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useCallback, useEffect, useState } from "react";
 import api from "../api/api";
+import ShirtImage from "../components/ShirtImage";
 
 function currentUserId() {
   try {
@@ -202,12 +203,22 @@ export default function TradingPage() {
                       background: "#181818",
                       color: "inherit",
                       font: "inherit",
+                      display: "flex",
+                      gap: "0.75rem",
+                      alignItems: "center",
                     }}
                   >
-                    <strong>{shirtLabel(item)}</strong>
-                    <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
-                      Value: {item.shirt?.valueScore ?? "—"}
-                    </div>
+                    <ShirtImage
+                      src={item.shirt?.image}
+                      alt={item.shirt?.name || "Shirt"}
+                      size="sm"
+                    />
+                    <span>
+                      <strong>{shirtLabel(item)}</strong>
+                      <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+                        Value: {item.shirt?.valueScore ?? "—"}
+                      </div>
+                    </span>
                   </button>
                 </li>
               ))}
@@ -236,13 +247,23 @@ export default function TradingPage() {
                       background: "#181818",
                       color: "inherit",
                       font: "inherit",
+                      display: "flex",
+                      gap: "0.75rem",
+                      alignItems: "center",
                     }}
                     className="list-item"
                   >
-                    <strong>{shirtLabel(item)}</strong>
-                    <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
-                      Value: {item.shirt?.valueScore ?? "—"}
-                    </div>
+                    <ShirtImage
+                      src={item.shirt?.image}
+                      alt={item.shirt?.name || "Shirt"}
+                      size="sm"
+                    />
+                    <span>
+                      <strong>{shirtLabel(item)}</strong>
+                      <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+                        Value: {item.shirt?.valueScore ?? "—"}
+                      </div>
+                    </span>
                   </button>
                 </li>
               ))}
@@ -285,11 +306,34 @@ export default function TradingPage() {
                     · with <strong>{partner || "?"}</strong>
                   </span>
                 </div>
-                <div style={{ fontSize: "0.9rem" }}>
-                  You give: {shirtLabel(youGive)}
-                </div>
-                <div style={{ fontSize: "0.9rem" }}>
-                  They give: {shirtLabel(theyGive)}
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "1rem",
+                    alignItems: "center",
+                  }}
+                >
+                  <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                    <ShirtImage
+                      src={youGive?.shirt?.image}
+                      alt={shirtLabel(youGive)}
+                      size="sm"
+                    />
+                    <span style={{ fontSize: "0.9rem" }}>
+                      You give: {shirtLabel(youGive)}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                    <ShirtImage
+                      src={theyGive?.shirt?.image}
+                      alt={shirtLabel(theyGive)}
+                      size="sm"
+                    />
+                    <span style={{ fontSize: "0.9rem" }}>
+                      They give: {shirtLabel(theyGive)}
+                    </span>
+                  </div>
                 </div>
                 {t.status === "pending" && (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
+import ShirtImage from "../components/ShirtImage";
 
 export default function PacksPage() {
   const [packs, setPacks] = useState([]);
@@ -30,8 +31,20 @@ export default function PacksPage() {
       <div className="grid">
         {packs.map((pack) => (
           <div key={pack._id} className="card pack-card">
-          <h3>{pack.name}</h3>
-          <p>{pack.description}</p>
+            <h3>{pack.name}</h3>
+            <p>{pack.description}</p>
+            {pack.shirtPool?.length > 0 && (
+              <div className="pack-shirt-pool" aria-label="Shirts in this pack">
+                {pack.shirtPool.map((shirt) => (
+                  <ShirtImage
+                    key={shirt._id}
+                    src={shirt.image}
+                    alt={shirt.name || "Shirt in pack"}
+                    size="sm"
+                  />
+                ))}
+              </div>
+            )}
             <button
               type="button"
               className="btn-primary"
@@ -46,8 +59,18 @@ export default function PacksPage() {
       <h2>Latest Pull</h2>
       <div className="list">
         {results.map((shirt) => (
-          <div key={shirt._id} className="list-item">
-            {shirt.name}
+          <div
+            key={shirt._id}
+            className="list-item collection-item-row"
+            style={{ alignItems: "center" }}
+          >
+            <ShirtImage src={shirt.image} alt={shirt.name} size="sm" />
+            <div>
+              <strong>{shirt.name}</strong>
+              <div style={{ fontSize: "0.9rem", opacity: 0.9 }}>
+                {shirt.rarity?.name || "Unknown rarity"} · Score {shirt.valueScore ?? "—"}
+              </div>
+            </div>
           </div>
         ))}
       </div>

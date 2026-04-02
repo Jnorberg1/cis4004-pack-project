@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
+import ShirtImage from "../components/ShirtImage";
 
 export default function LeaderboardPage() {
   const [leaders, setLeaders] = useState([]);
@@ -32,15 +33,20 @@ export default function LeaderboardPage() {
             marginBottom: "12px",
           }}
         >
-          <h3>
-            #{index + 1} {entry.shirtName}
-          </h3>
-          <p><strong>Brand:</strong> {entry.brand}</p>
-          <p><strong>Rarity:</strong> {entry.rarityName || "Unknown"}</p>
-          <p><strong>Value Score:</strong> {entry.valueScore}</p>
-          <p><strong>Total Pulls:</strong> {entry.pullCount}</p>
-          <p><strong>Favorites:</strong> {entry.favoriteCount}</p>
-          <p>{entry.description}</p>
+          <div className="collection-item-row">
+            <ShirtImage src={entry.imageUrl} alt={entry.shirtName} />
+            <div>
+              <h3>
+                #{index + 1} {entry.shirtName}
+              </h3>
+              <p><strong>Brand:</strong> {entry.brand}</p>
+              <p><strong>Rarity:</strong> {entry.rarityName || "Unknown"}</p>
+              <p><strong>Value Score:</strong> {entry.valueScore}</p>
+              <p><strong>Total Pulls:</strong> {entry.pullCount}</p>
+              <p><strong>Favorites:</strong> {entry.favoriteCount}</p>
+              <p>{entry.description}</p>
+            </div>
+          </div>
         </div>
       ))}
     </div>

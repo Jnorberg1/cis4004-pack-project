@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from "react";
 import api from "../api/api";
+import ShirtImage from "../components/ShirtImage";
 
 export default function CollectionPage() {
   const [collection, setCollection] = useState([]);
@@ -63,24 +64,33 @@ export default function CollectionPage() {
             marginBottom: "12px",
           }}
         >
-          <h3>{item.shirt?.name || "Unknown Shirt"}</h3>
-          <p><strong>Brand:</strong> {item.shirt?.brand || "Unknown"}</p>
-          <p><strong>Rarity:</strong> {item.shirt?.rarity?.name || "Unknown"}</p>
-          <p><strong>Value Score:</strong> {item.shirt?.valueScore ?? "N/A"}</p>
-          <p><strong>Description:</strong> {item.shirt?.description || "No description"}</p>
-          <p><strong>Favorite:</strong> {item.isFavorite ? "Yes" : "No"}</p>
-          <p><strong>Pulled From:</strong> {item.pack?.name || "Unknown Pack"}</p>
+          <div className="collection-item-row">
+            <ShirtImage
+              src={item.shirt?.image}
+              alt={item.shirt?.name || "Shirt"}
+            />
+            <div>
+              <h3>{item.shirt?.name || "Unknown Shirt"}</h3>
+              <p><strong>Brand:</strong> {item.shirt?.brand || "Unknown"}</p>
+              <p><strong>Rarity:</strong> {item.shirt?.rarity?.name || "Unknown"}</p>
+              <p><strong>Value Score:</strong> {item.shirt?.valueScore ?? "N/A"}</p>
+              <p><strong>Description:</strong> {item.shirt?.description || "No description"}</p>
+              <p><strong>Favorite:</strong> {item.isFavorite ? "Yes" : "No"}</p>
+              <p><strong>Pulled From:</strong> {item.pack?.name || "Unknown Pack"}</p>
 
-          <button onClick={() => toggleFavorite(item._id)}>
-            {item.isFavorite ? "Remove Favorite" : "Add to Favorites"}
-          </button>
+              <button type="button" onClick={() => toggleFavorite(item._id)}>
+                {item.isFavorite ? "Remove Favorite" : "Add to Favorites"}
+              </button>
 
-          <button
-            onClick={() => deleteCollectionItem(item._id)}
-            style={{ marginLeft: "10px" }}
-          >
-            Remove From Collection
-          </button>
+              <button
+                type="button"
+                onClick={() => deleteCollectionItem(item._id)}
+                style={{ marginLeft: "10px" }}
+              >
+                Remove From Collection
+              </button>
+            </div>
+          </div>
         </div>
       ))}
     </div>
