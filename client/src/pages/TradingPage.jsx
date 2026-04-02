@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import api from "../api/api";
 import ShirtImage from "../components/ShirtImage";
+import { useSessionUiState } from "../utils/sessionUiState";
 
 function currentUserId() {
   try {
@@ -188,8 +189,8 @@ export default function TradingPage() {
   const [selectedMineIds, setSelectedMineIds] = useState([]);
   const [selectedTheirsIds, setSelectedTheirsIds] = useState([]);
   const [trades, setTrades] = useState([]);
-  const [pendingOpen, setPendingOpen] = useState(true);
-  const [historyOpen, setHistoryOpen] = useState(true);
+  const [pendingOpen, setPendingOpen] = useSessionUiState("trading.pendingOpen", true);
+  const [historyOpen, setHistoryOpen] = useSessionUiState("trading.historyOpen", true);
   const [statusMessage, setStatusMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [offerSearch, setOfferSearch] = useState("");

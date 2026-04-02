@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../api/api";
 import ShirtImage from "../components/ShirtImage";
+import { useSessionUiState } from "../utils/sessionUiState";
 
 function entryPullSearchBlob(entry) {
   const shirt = entry.shirt;
@@ -38,13 +39,22 @@ export default function AdminDashboard() {
   const [rarities, setRarities] = useState([]);
   const [message, setMessage] = useState("");
   const [editingId, setEditingId] = useState(null);
-  const [allShirtsMinimized, setAllShirtsMinimized] = useState(false);
-  const [userCollectionsMinimized, setUserCollectionsMinimized] = useState(false);
-  const [createShirtMinimized, setCreateShirtMinimized] = useState(false);
-  const [categoriesExpanded, setCategoriesExpanded] = useState(false);
-  const [expandedCollectionUserIds, setExpandedCollectionUserIds] = useState(
-    () => new Set()
+  const [allShirtsMinimized, setAllShirtsMinimized] = useSessionUiState(
+    "admin.allShirtsMinimized",
+    false
   );
+  const [userCollectionsMinimized, setUserCollectionsMinimized] =
+    useSessionUiState("admin.userCollectionsMinimized", false);
+  const [createShirtMinimized, setCreateShirtMinimized] = useSessionUiState(
+    "admin.createShirtMinimized",
+    false
+  );
+  const [categoriesExpanded, setCategoriesExpanded] = useSessionUiState(
+    "admin.categoriesExpanded",
+    false
+  );
+  const [expandedCollectionUserIds, setExpandedCollectionUserIds] =
+    useSessionUiState("admin.expandedCollectionUserIds", []);
   const [blankTags, setBlankTags] = useState([]);
   const [grantUserId, setGrantUserId] = useState("");
   const [grantShirtId, setGrantShirtId] = useState("");
@@ -52,7 +62,8 @@ export default function AdminDashboard() {
   const [grantSingleStitch, setGrantSingleStitch] = useState(false);
   const [allShirtsSearch, setAllShirtsSearch] = useState("");
   const [userCollectionsSearch, setUserCollectionsSearch] = useState("");
-  const [grantShirtSectionMinimized, setGrantShirtSectionMinimized] = useState(false);
+  const [grantShirtSectionMinimized, setGrantShirtSectionMinimized] =
+    useSessionUiState("admin.grantShirtSectionMinimized", false);
 
   const emptyForm = {
     name: "",
@@ -187,11 +198,11 @@ export default function AdminDashboard() {
   }, [users, entriesByUserId, userCollectionsSearch]);
 
   const toggleCollectionUserExpanded = (userId) => {
+    const sid = String(userId);
     setExpandedCollectionUserIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(userId)) next.delete(userId);
-      else next.add(userId);
-      return next;
+      const arr = Array.isArray(prev) ? prev : [];
+      if (arr.includes(sid)) return arr.filter((x) => x !== sid);
+      return [...arr, sid];
     });
   };
 
@@ -274,10 +285,11 @@ export default function AdminDashboard() {
       setGrantSingleStitch(false);
       await loadAdminData({ clearMessage: false });
       if (grantUserId) {
+        const sid = String(grantUserId);
         setExpandedCollectionUserIds((prev) => {
-          const next = new Set(prev);
-          next.add(String(grantUserId));
-          return next;
+          const arr = Array.isArray(prev) ? prev : [];
+          if (arr.includes(sid)) return arr;
+          return [...arr, sid];
         });
       }
     } catch (error) {
@@ -849,7 +861,9 @@ export default function AdminDashboard() {
                 entriesRaw,
                 userCollectionsSearch
               );
-              const expanded = expandedCollectionUserIds.has(uid);
+              const expanded =
+                Array.isArray(expandedCollectionUserIds) &&
+                expandedCollectionUserIds.includes(uid);
               return (
                 <div
                   key={uid}
