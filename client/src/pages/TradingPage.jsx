@@ -192,6 +192,8 @@ export default function TradingPage() {
   const [historyOpen, setHistoryOpen] = useState(true);
   const [statusMessage, setStatusMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [offerSearch, setOfferSearch] = useState("");
+  const [wantSearch, setWantSearch] = useState("");
 
   const me = currentUserId();
 
@@ -352,6 +354,27 @@ export default function TradingPage() {
     peerPayload &&
     (selectedMineIds.length > 0 || selectedTheirsIds.length > 0);
 
+  const filteredMyItems = useMemo(() => {
+    const q = offerSearch.trim().toLowerCase();
+    if (!q) return myItems;
+    return myItems.filter((item) => {
+      const label = shirtLabel(item).toLowerCase();
+      const line = tagLine(item).toLowerCase();
+      return label.includes(q) || line.includes(q);
+    });
+  }, [myItems, offerSearch]);
+
+  const filteredPeerItems = useMemo(() => {
+    const items = peerPayload?.items || [];
+    const q = wantSearch.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter((item) => {
+      const label = shirtLabel(item).toLowerCase();
+      const line = tagLine(item).toLowerCase();
+      return label.includes(q) || line.includes(q);
+    });
+  }, [peerPayload, wantSearch]);
+
   return (
     <div className="page">
       <h1>Trading</h1>
@@ -465,8 +488,21 @@ export default function TradingPage() {
           {myItems.length === 0 ? (
             <p>Open packs to add shirts you can trade.</p>
           ) : (
+            <>
+              <label htmlFor="trade-offer-search" className="trading-offer-search-label">
+                Search your shirts
+              </label>
+              <input
+                id="trade-offer-search"
+                type="search"
+                placeholder="Shirt name or tag…"
+                value={offerSearch}
+                onChange={(e) => setOfferSearch(e.target.value)}
+                style={{ width: "100%", marginBottom: "0.65rem" }}
+                autoComplete="off"
+              />
             <ul className="list" style={{ listStyle: "none", padding: 0, margin: 0 }}>
-              {myItems.map((item) => {
+              {filteredMyItems.map((item) => {
                 const sel = idInList(selectedMineIds, item._id);
                 return (
                   <li key={item._id}>
@@ -505,6 +541,12 @@ export default function TradingPage() {
                 );
               })}
             </ul>
+            {filteredMyItems.length === 0 && myItems.length > 0 && (
+              <p style={{ opacity: 0.85, fontSize: "0.9rem", marginTop: "0.5rem" }}>
+                No shirts match this search.
+              </p>
+            )}
+            </>
           )}
         </section>
 
@@ -515,8 +557,21 @@ export default function TradingPage() {
             <p>That user has no shirts in their collection yet. You can still offer a gift from your side only.</p>
           )}
           {peerPayload && peerPayload.items.length > 0 && (
+            <>
+              <label htmlFor="trade-want-search" className="trading-offer-search-label">
+                Search their shirts
+              </label>
+              <input
+                id="trade-want-search"
+                type="search"
+                placeholder="Shirt name or tag…"
+                value={wantSearch}
+                onChange={(e) => setWantSearch(e.target.value)}
+                style={{ width: "100%", marginBottom: "0.65rem" }}
+                autoComplete="off"
+              />
             <ul className="list" style={{ listStyle: "none", padding: 0, margin: 0 }}>
-              {peerPayload.items.map((item) => {
+              {filteredPeerItems.map((item) => {
                 const sel = idInList(selectedTheirsIds, item._id);
                 return (
                   <li key={item._id}>
@@ -555,6 +610,12 @@ export default function TradingPage() {
                 );
               })}
             </ul>
+            {filteredPeerItems.length === 0 && (
+              <p style={{ opacity: 0.85, fontSize: "0.9rem", marginTop: "0.5rem" }}>
+                No shirts match this search.
+              </p>
+            )}
+            </>
           )}
         </section>
         </div>

@@ -6,17 +6,18 @@ export const BLANK_TAG_ENUM = [
   "Giant",
 ];
 
+/** Weights sum to 100. Screen Stars + Giant are stitch-eligible and deliberately bumped. */
 const TAG_WEIGHTS = [
-  { tag: "Gildan", weight: 42 },
-  { tag: "Fruit of the Loom", weight: 24 },
-  { tag: "Hanes Beefy-T", weight: 20 },
-  { tag: "Screen Stars", weight: 9 },
-  { tag: "Giant", weight: 5 },
+  { tag: "Gildan", weight: 28 },
+  { tag: "Fruit of the Loom", weight: 16 },
+  { tag: "Hanes Beefy-T", weight: 16 },
+  { tag: "Screen Stars", weight: 22 },
+  { tag: "Giant", weight: 18 },
 ];
 
 const TOTAL_WEIGHT = TAG_WEIGHTS.reduce((s, row) => s + row.weight, 0);
 
-/** Weighted random blank / tag when a shirt is pulled (Gildan common, Giant rarest). */
+/** Weighted random blank / tag when a shirt is pulled. */
 export function rollBlankTag() {
   const x = Math.random() * TOTAL_WEIGHT;
   let cumulative = 0;
@@ -30,9 +31,12 @@ export function rollBlankTag() {
 const SINGLE_STITCH_TAGS = new Set(["Screen Stars", "Giant"]);
 
 /**
- * Only Screen Stars and Giant may roll single-stitch (modest vintage odds).
+ * Eligible-tags weight 40% of rolls; this chance makes ~1 in 5 packs (3 cards)
+ * get at least one single stitch: 1 - (1 - 0.4×0.18)³ ≈ 20%.
  */
+const SINGLE_STITCH_CHANCE_IF_ELIGIBLE = 0.18;
+
 export function rollSingleStitch(tag) {
   if (!SINGLE_STITCH_TAGS.has(tag)) return false;
-  return Math.random() < 0.12;
+  return Math.random() < SINGLE_STITCH_CHANCE_IF_ELIGIBLE;
 }

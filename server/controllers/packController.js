@@ -3,9 +3,38 @@ import CollectionEntry from "../models/CollectionEntry.js";
 import PackOpeningHistory from "../models/PackOpeningHistory.js";
 import { rollBlankTag, rollSingleStitch } from "../utils/blankTagRoll.js";
 
-const getRandomItems = (items, count) => {
-  const shuffled = [...items].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
+const rarityWeight = (shirt) => {
+  const w = shirt?.rarity?.weight;
+  if (typeof w === "number" && Number.isFinite(w) && w > 0) return w;
+  return 1;
+};
+
+/** One weighted pick from `pool` (mutates nothing). */
+const pickWeightedShirt = (pool) => {
+  if (!pool.length) return null;
+  const weights = pool.map(rarityWeight);
+  const total = weights.reduce((a, b) => a + b, 0);
+  let r = Math.random() * total;
+  for (let i = 0; i < pool.length; i++) {
+    r -= weights[i];
+    if (r <= 0) return pool[i];
+  }
+  return pool[pool.length - 1];
+};
+
+/** Up to `count` unique shirts; each draw is weighted by its rarity’s `weight`. */
+const pullShirtsByRarityWeight = (shirtPool, count) => {
+  const pool = [...shirtPool];
+  const picked = [];
+  const n = Math.min(count, pool.length);
+  for (let i = 0; i < n; i++) {
+    const shirt = pickWeightedShirt(pool);
+    if (!shirt) break;
+    picked.push(shirt);
+    const idx = pool.indexOf(shirt);
+    if (idx !== -1) pool.splice(idx, 1);
+  }
+  return picked;
 };
 
 export const getAllPacks = async (req, res) => {
@@ -32,7 +61,10 @@ export const openPack = async (req, res) => {
       return res.status(404).json({ message: "Pack not found" });
     }
 
-    const pulledShirts = getRandomItems(pack.shirtPool, pack.cardsPerPack);
+    const pulledShirts = pullShirtsByRarityWeight(
+      pack.shirtPool,
+      pack.cardsPerPack
+    );
 
     const entryDocs = await Promise.all(
       pulledShirts.map((shirt) => {

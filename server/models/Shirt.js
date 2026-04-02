@@ -17,7 +17,6 @@ const shirtSchema = new mongoose.Schema(
         ref: "Category",
       },
     ],
-    valueScore: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

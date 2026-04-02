@@ -68,7 +68,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/inqHdxo.jpeg",
         rarity: rarityMap["Common"],
         categories: [categoryMap["Comics"], categoryMap["Streetwear"]],
-        valueScore: 32,
       },
       {
         name: "Bjork Shirt",
@@ -77,7 +76,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/7l07Fky.jpeg",
         rarity: rarityMap["Rare"],
         categories: [categoryMap["Music"]],
-        valueScore: 41,
       },
       {
         name: "Bob Dylan Shirt",
@@ -86,7 +84,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/XZw93ft.jpeg",
         rarity: rarityMap["Rare"],
         categories: [categoryMap["Music"], categoryMap["Vintage"]],
-        valueScore: 43,
       },
       {
         name: "David Bowie Shirt",
@@ -95,7 +92,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/Aq7r6AX.jpeg",
         rarity: rarityMap["Epic"],
         categories: [categoryMap["Music"], categoryMap["Vintage"]],
-        valueScore: 56,
       },
       {
         name: "Hawaii Shirt",
@@ -104,7 +100,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/jGrkEsy.jpeg",
         rarity: rarityMap["Common"],
         categories: [categoryMap["Travel"], categoryMap["Vintage"]],
-        valueScore: 22,
       },
       {
         name: "Jaws Shirt",
@@ -113,7 +108,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/lS5T0uz.jpeg",
         rarity: rarityMap["Rare"],
         categories: [categoryMap["Movies & TV"], categoryMap["Horror"]],
-        valueScore: 39,
       },
       {
         name: "M.C. Escher Shirt",
@@ -122,7 +116,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/zp2OgDG.jpeg",
         rarity: rarityMap["Epic"],
         categories: [categoryMap["Art"]],
-        valueScore: 51,
       },
       {
         name: "Nike Shirt",
@@ -131,7 +124,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/6pmqaxE.jpeg",
         rarity: rarityMap["Common"],
         categories: [categoryMap["Sports"], categoryMap["Streetwear"]],
-        valueScore: 30,
       },
       {
         name: "Nirvana Shirt",
@@ -140,7 +132,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/qK1XKug.jpeg",
         rarity: rarityMap["Legendary"],
         categories: [categoryMap["Music"]],
-        valueScore: 86,
       },
       {
         name: "Pink Floyd Shirt",
@@ -149,7 +140,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/2v4wX4t.jpeg",
         rarity: rarityMap["Epic"],
         categories: [categoryMap["Music"], categoryMap["Vintage"]],
-        valueScore: 59,
       },
       {
         name: "Skiing Shirt",
@@ -158,7 +148,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/MkbahVJ.jpeg",
         rarity: rarityMap["Common"],
         categories: [categoryMap["Sports"], categoryMap["Vintage"]],
-        valueScore: 19,
       },
       {
         name: "Sonic Youth Shirt",
@@ -167,7 +156,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/9EtyGD7.jpeg",
         rarity: rarityMap["Rare"],
         categories: [categoryMap["Music"]],
-        valueScore: 45,
       },
       {
         name: "Spider Man Shirt",
@@ -176,7 +164,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/kNfQylI.jpeg",
         rarity: rarityMap["Rare"],
         categories: [categoryMap["Comics"]],
-        valueScore: 37,
       },
       {
         name: "Star Wars Return of the Jedi Shirt",
@@ -185,7 +172,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/H5sct3o.jpeg",
         rarity: rarityMap["Legendary"],
         categories: [categoryMap["Movies & TV"], categoryMap["Vintage"]],
-        valueScore: 89,
       },
       {
         name: "The Smiths Shirt",
@@ -194,7 +180,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/NEjlNVz.jpeg",
         rarity: rarityMap["Epic"],
         categories: [categoryMap["Music"]],
-        valueScore: 53,
       },
       {
         name: "TMNT Shirt",
@@ -203,7 +188,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/GI6wDvf.jpeg",
         rarity: rarityMap["Rare"],
         categories: [categoryMap["Comics"]],
-        valueScore: 41,
       },
       {
         name: "UCF Spirit Splash Shirt",
@@ -212,7 +196,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/xdE8aDt.jpeg",
         rarity: rarityMap["Epic"],
         categories: [categoryMap["Collegiate"], categoryMap["Sports"]],
-        valueScore: 47,
       },
       {
         name: "Akira Shirt",
@@ -221,7 +204,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/YwGmdFM.jpeg",
         rarity: rarityMap["Epic"],
         categories: [categoryMap["Anime"], categoryMap["Streetwear"]],
-        valueScore: 63,
       },
       {
         name: "PacMan Shirt",
@@ -230,7 +212,6 @@ const seedData = async () => {
         image: "https://i.imgur.com/yToWxzO.jpeg",
         rarity: rarityMap["Common"],
         categories: [categoryMap["Gaming"], categoryMap["Vintage"]],
-        valueScore: 31,
       },
     ]);
 

@@ -6,7 +6,9 @@ import Pack from "../models/Pack.js";
 import Category from "../models/Category.js";
 import Rarity from "../models/Rarity.js";
 import CollectionEntry from "../models/CollectionEntry.js";
+import User from "../models/User.js";
 import { cancelPendingTradesContainingEntryId } from "../controllers/tradeController.js";
+import { BLANK_TAG_ENUM } from "../utils/blankTagRoll.js";
 
 const router = express.Router();
 
@@ -19,7 +21,6 @@ const shirtPayloadFromBody = (body) => ({
   image: typeof body.image === "string" ? body.image.trim() : "",
   rarity: body.rarity,
   categories: Array.isArray(body.categories) ? body.categories : [],
-  valueScore: Number(body.valueScore) || 0,
 });
 
 router.post("/shirts", async (req, res) => {
@@ -122,6 +123,15 @@ router.get("/rarities", async (req, res) => {
   }
 });
 
+router.get("/users", async (req, res) => {
+  try {
+    const users = await User.find().select("username role").sort({ username: 1 });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 router.get("/collection-entries", async (req, res) => {
   try {
     const entries = await CollectionEntry.find()
@@ -134,6 +144,58 @@ router.get("/collection-entries", async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(500);
     res.json(entries);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.get("/blank-tags", (req, res) => {
+  res.json({ tags: BLANK_TAG_ENUM });
+});
+
+router.post("/collection-entries", async (req, res) => {
+  try {
+    const { user: userId, shirt: shirtId, tag: rawTag, singleStitch } = req.body;
+    if (!userId || !shirtId) {
+      return res.status(400).json({ message: "user and shirt are required" });
+    }
+
+    const tagTrimmed =
+      typeof rawTag === "string" && rawTag.trim() ? rawTag.trim() : "Gildan";
+    if (!BLANK_TAG_ENUM.includes(tagTrimmed)) {
+      return res.status(400).json({
+        message: `tag must be one of: ${BLANK_TAG_ENUM.join(", ")}`,
+      });
+    }
+
+    const [userDoc, shirtDoc] = await Promise.all([
+      User.findById(userId).select("_id"),
+      Shirt.findById(shirtId).select("_id"),
+    ]);
+    if (!userDoc) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (!shirtDoc) {
+      return res.status(404).json({ message: "Shirt not found" });
+    }
+
+    const entry = await CollectionEntry.create({
+      user: userId,
+      shirt: shirtId,
+      pack: null,
+      tag: tagTrimmed,
+      singleStitch: Boolean(singleStitch),
+    });
+
+    const populated = await CollectionEntry.findById(entry._id)
+      .populate("user", "username role")
+      .populate({
+        path: "shirt",
+        populate: [{ path: "rarity" }, { path: "categories" }],
+      })
+      .populate("pack");
+
+    res.status(201).json(populated);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

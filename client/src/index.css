@@ -332,6 +332,14 @@ input {
   border-radius: 0.65rem;
 }
 
+.trading-offer-search-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
 .trading-offer-panel {
   border: 1px solid #343434;
   border-radius: 0.65rem;
