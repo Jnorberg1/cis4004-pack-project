@@ -1,6 +1,7 @@
 import Pack from "../models/Pack.js";
 import CollectionEntry from "../models/CollectionEntry.js";
 import PackOpeningHistory from "../models/PackOpeningHistory.js";
+import { rollBlankTag, rollSingleStitch } from "../utils/blankTagRoll.js";
 
 const getRandomItems = (items, count) => {
   const shuffled = [...items].sort(() => 0.5 - Math.random());
@@ -33,13 +34,24 @@ export const openPack = async (req, res) => {
 
     const pulledShirts = getRandomItems(pack.shirtPool, pack.cardsPerPack);
 
-    const collectionEntries = await Promise.all(
-      pulledShirts.map((shirt) =>
-        CollectionEntry.create({
+    const entryDocs = await Promise.all(
+      pulledShirts.map((shirt) => {
+        const tag = rollBlankTag();
+        return CollectionEntry.create({
           user: req.user.id,
           shirt: shirt._id,
           pack: pack._id,
-        })
+          tag,
+          singleStitch: rollSingleStitch(tag),
+        });
+      })
+    );
+
+    const collectionEntries = await Promise.all(
+      entryDocs.map((doc) =>
+        CollectionEntry.findById(doc._id)
+          .populate({ path: "shirt", populate: { path: "rarity" } })
+          .populate("pack")
       )
     );
 

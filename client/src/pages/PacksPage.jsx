@@ -17,7 +17,7 @@ export default function PacksPage() {
   const handleOpenPack = async (packId) => {
     try {
       const res = await api.post(`/packs/open/${packId}`);
-      setResults(res.data.results);
+      setResults(res.data.collectionEntries || []);
     } catch (error) {
       alert(error.response?.data?.message || "Could not open pack");
     }
@@ -58,21 +58,25 @@ export default function PacksPage() {
 
       <h2>Latest Pull</h2>
       <div className="list">
-        {results.map((shirt) => (
-          <div
-            key={shirt._id}
-            className="list-item collection-item-row"
-            style={{ alignItems: "center" }}
-          >
-            <ShirtImage src={shirt.image} alt={shirt.name} size="sm" />
-            <div>
-              <strong>{shirt.name}</strong>
-              <div style={{ fontSize: "0.9rem", opacity: 0.9 }}>
-                {shirt.rarity?.name || "Unknown rarity"} · Score {shirt.valueScore ?? "—"}
+        {results.map((entry) => {
+          const shirt = entry.shirt || {};
+          return (
+            <div
+              key={entry._id}
+              className="list-item collection-item-row"
+              style={{ alignItems: "center" }}
+            >
+              <ShirtImage src={shirt.image} alt={shirt.name} size="sm" />
+              <div>
+                <strong>{shirt.name}</strong>
+                <div style={{ fontSize: "0.9rem", opacity: 0.9 }}>
+                  Tag: {entry.tag || "Gildan"}
+                  {entry.singleStitch ? " · Single stitch" : ""}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

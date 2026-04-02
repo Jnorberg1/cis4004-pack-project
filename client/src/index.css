@@ -226,3 +226,29 @@ input {
   max-width: 48px;
   border-width: 1px;
 }
+
+.collection-card {
+  border: 1px solid #343434;
+  border-radius: 0.65rem;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.collection-card--single-stitch {
+  border: 3px solid #d4af37;
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.35);
+}
+
+.collection-card__single-stitch-badge {
+  color: #e8c547;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+}
+
+.collection-card__favorite-badge {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+}

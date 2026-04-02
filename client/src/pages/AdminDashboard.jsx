@@ -349,6 +349,12 @@ export default function AdminDashboard() {
                 <p>
                   <strong>Pack:</strong> {entry.pack?.name || "—"}
                 </p>
+                <p>
+                  <strong>Tag:</strong> {entry.tag || "Gildan"}
+                </p>
+                <p>
+                  <strong>Single stitch:</strong> {entry.singleStitch ? "Yes" : "No"}
+                </p>
                 <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
                   Entry ID: {entry._id}
                 </p>

@@ -21,6 +21,12 @@ function shirtLabel(entry) {
   return `${s.name}${rarity}`;
 }
 
+function tagLine(entry) {
+  const t = entry?.tag || "Gildan";
+  const ss = entry?.singleStitch ? " · single stitch" : "";
+  return `${t}${ss}`;
+}
+
 export default function TradingPage() {
   const [myItems, setMyItems] = useState([]);
   const [peerPayload, setPeerPayload] = useState(null);
@@ -218,6 +224,9 @@ export default function TradingPage() {
                       <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
                         Value: {item.shirt?.valueScore ?? "—"}
                       </div>
+                      <div style={{ fontSize: "0.8rem", opacity: 0.75 }}>
+                        {tagLine(item)}
+                      </div>
                     </span>
                   </button>
                 </li>
@@ -262,6 +271,9 @@ export default function TradingPage() {
                       <strong>{shirtLabel(item)}</strong>
                       <div style={{ fontSize: "0.85rem", opacity: 0.85 }}>
                         Value: {item.shirt?.valueScore ?? "—"}
+                      </div>
+                      <div style={{ fontSize: "0.8rem", opacity: 0.75 }}>
+                        {tagLine(item)}
                       </div>
                     </span>
                   </button>
@@ -322,6 +334,9 @@ export default function TradingPage() {
                     />
                     <span style={{ fontSize: "0.9rem" }}>
                       You give: {shirtLabel(youGive)}
+                      <span style={{ display: "block", fontSize: "0.8rem", opacity: 0.8 }}>
+                        {tagLine(youGive)}
+                      </span>
                     </span>
                   </div>
                   <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
@@ -332,6 +347,9 @@ export default function TradingPage() {
                     />
                     <span style={{ fontSize: "0.9rem" }}>
                       They give: {shirtLabel(theyGive)}
+                      <span style={{ display: "block", fontSize: "0.8rem", opacity: 0.8 }}>
+                        {tagLine(theyGive)}
+                      </span>
                     </span>
                   </div>
                 </div>

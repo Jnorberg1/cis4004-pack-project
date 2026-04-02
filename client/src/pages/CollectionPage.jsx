@@ -1,10 +1,13 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../api/api";
 import ShirtImage from "../components/ShirtImage";
 
+const FAVORITES_FILTER = "__favorites__";
+
 export default function CollectionPage() {
   const [collection, setCollection] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [errorMessage, setErrorMessage] = useState("");
 
   const fetchCollection = async () => {
@@ -26,6 +29,36 @@ export default function CollectionPage() {
   useEffect(() => {
     fetchCollection();
   }, []);
+
+  const categoryNames = useMemo(() => {
+    const names = new Set();
+    collection.forEach((item) => {
+      item.shirt?.categories?.forEach((c) => {
+        if (c?.name) names.add(c.name);
+      });
+    });
+    return Array.from(names).sort((a, b) => a.localeCompare(b));
+  }, [collection]);
+
+  const sortedFiltered = useMemo(() => {
+    let rows = collection;
+    if (categoryFilter === FAVORITES_FILTER) {
+      rows = rows.filter((item) => item.isFavorite);
+    } else if (categoryFilter !== "all") {
+      rows = rows.filter((item) =>
+        item.shirt?.categories?.some((c) => c.name === categoryFilter)
+      );
+    }
+    return [...rows].sort((a, b) => {
+      const key = (item) =>
+        (item.shirt?.categories?.map((c) => c.name).filter(Boolean) || [])
+          .sort()
+          .join(", ") || "—";
+      const byCat = key(a).localeCompare(key(b));
+      if (byCat !== 0) return byCat;
+      return (a.shirt?.name || "").localeCompare(b.shirt?.name || "");
+    });
+  }, [collection, categoryFilter]);
 
   const toggleFavorite = async (id) => {
     try {
@@ -51,18 +84,52 @@ export default function CollectionPage() {
 
       {errorMessage && <p>{errorMessage}</p>}
 
+      {!errorMessage && collection.length > 0 && (
+        <div style={{ marginBottom: "1rem", maxWidth: "420px" }}>
+          <label htmlFor="collection-category" style={{ display: "block", marginBottom: "0.35rem" }}>
+            <strong>Category</strong>
+          </label>
+          <select
+            id="collection-category"
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            style={{ width: "100%", padding: "0.5rem 0.65rem", fontSize: "1rem" }}
+          >
+            <option value="all">All categories</option>
+            <option value={FAVORITES_FILTER}>Favorites</option>
+            {categoryNames.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+          <p style={{ marginTop: "0.5rem", fontSize: "0.9rem", opacity: 0.85 }}>
+            Showing {sortedFiltered.length} of {collection.length} items, sorted by category then
+            name.
+          </p>
+        </div>
+      )}
+
       {!errorMessage && collection.length === 0 && (
         <p>You have not pulled any shirts yet.</p>
       )}
 
-      {collection.map((item) => (
+      {!errorMessage && collection.length > 0 && sortedFiltered.length === 0 && (
+        <p>
+          {categoryFilter === FAVORITES_FILTER
+            ? "No favorites yet. Star items with Add to Favorites."
+            : 'No items in this category. Choose "All categories" or another option.'}
+        </p>
+      )}
+
+      {sortedFiltered.map((item) => {
+        const categoryLabel =
+          item.shirt?.categories?.map((c) => c.name).filter(Boolean).join(", ") || "—";
+
+        return (
         <div
           key={item._id}
-          style={{
-            border: "1px solid #ccc",
-            padding: "12px",
-            marginBottom: "12px",
-          }}
+          className={`collection-card${item.singleStitch ? " collection-card--single-stitch" : ""}`}
         >
           <div className="collection-item-row">
             <ShirtImage
@@ -71,12 +138,15 @@ export default function CollectionPage() {
             />
             <div>
               <h3>{item.shirt?.name || "Unknown Shirt"}</h3>
-              <p><strong>Brand:</strong> {item.shirt?.brand || "Unknown"}</p>
-              <p><strong>Rarity:</strong> {item.shirt?.rarity?.name || "Unknown"}</p>
-              <p><strong>Value Score:</strong> {item.shirt?.valueScore ?? "N/A"}</p>
+              {item.singleStitch && (
+                <p className="collection-card__single-stitch-badge">Single stitch</p>
+              )}
+              <p><strong>Categories:</strong> {categoryLabel}</p>
+              <p><strong>Tag:</strong> {item.tag || "Gildan"}</p>
               <p><strong>Description:</strong> {item.shirt?.description || "No description"}</p>
-              <p><strong>Favorite:</strong> {item.isFavorite ? "Yes" : "No"}</p>
-              <p><strong>Pulled From:</strong> {item.pack?.name || "Unknown Pack"}</p>
+              {item.isFavorite && (
+                <p className="collection-card__favorite-badge">Favorite</p>
+              )}
 
               <button type="button" onClick={() => toggleFavorite(item._id)}>
                 {item.isFavorite ? "Remove Favorite" : "Add to Favorites"}
@@ -92,7 +162,8 @@ export default function CollectionPage() {
             </div>
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

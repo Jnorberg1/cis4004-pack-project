@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { BLANK_TAG_ENUM } from "../utils/blankTagRoll.js";
 
 const collectionEntrySchema = new mongoose.Schema(
   {
@@ -18,6 +19,15 @@ const collectionEntrySchema = new mongoose.Schema(
       default: null,
     },
     isFavorite: {
+      type: Boolean,
+      default: false,
+    },
+    tag: {
+      type: String,
+      enum: BLANK_TAG_ENUM,
+      default: "Gildan",
+    },
+    singleStitch: {
       type: Boolean,
       default: false,
     },
