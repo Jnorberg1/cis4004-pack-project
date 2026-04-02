@@ -17,6 +17,11 @@ const shirtSchema = new mongoose.Schema(
         ref: "Category",
       },
     ],
+    pack: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Pack",
+      required: true,
+    },
   },
   { timestamps: true }
 );

@@ -64,6 +64,19 @@ export default function AdminDashboard() {
   const [userCollectionsSearch, setUserCollectionsSearch] = useState("");
   const [grantShirtSectionMinimized, setGrantShirtSectionMinimized] =
     useSessionUiState("admin.grantShirtSectionMinimized", false);
+  const [adminPacks, setAdminPacks] = useState([]);
+  const [packSectionMinimized, setPackSectionMinimized] = useSessionUiState(
+    "admin.packSectionMinimized",
+    false
+  );
+  const [editingPackId, setEditingPackId] = useState(null);
+  const emptyPackForm = { name: "", description: "", cardsPerPack: 3 };
+  const [packForm, setPackForm] = useState(emptyPackForm);
+  const [grantPackSectionMinimized, setGrantPackSectionMinimized] =
+    useSessionUiState("admin.grantPackSectionMinimized", false);
+  const [grantPackUserId, setGrantPackUserId] = useState("");
+  const [grantPackPackId, setGrantPackPackId] = useState("");
+  const [grantPackCount, setGrantPackCount] = useState(1);
 
   const emptyForm = {
     name: "",
@@ -72,6 +85,7 @@ export default function AdminDashboard() {
     image: "",
     rarity: "",
     categories: [],
+    pack: "",
   };
 
   const [form, setForm] = useState(emptyForm);
@@ -80,6 +94,7 @@ export default function AdminDashboard() {
     try {
       const [
         shirtsRes,
+        packsRes,
         categoriesRes,
         raritiesRes,
         entriesRes,
@@ -87,6 +102,7 @@ export default function AdminDashboard() {
         tagsRes,
       ] = await Promise.all([
         api.get("/admin/shirts"),
+        api.get("/admin/packs"),
         api.get("/admin/categories"),
         api.get("/admin/rarities"),
         api.get("/admin/collection-entries"),
@@ -95,6 +111,7 @@ export default function AdminDashboard() {
       ]);
 
       setShirts(shirtsRes.data);
+      setAdminPacks(packsRes.data);
       setCategories(categoriesRes.data);
       setRarities(raritiesRes.data);
       setCollectionEntries(entriesRes.data);
@@ -120,6 +137,87 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (editingId) setCreateShirtMinimized(false);
   }, [editingId]);
+
+  useEffect(() => {
+    if (editingPackId) setPackSectionMinimized(false);
+  }, [editingPackId]);
+
+  const handleCreateOrUpdatePack = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        name: packForm.name.trim(),
+        description: packForm.description,
+        cardsPerPack: Number(packForm.cardsPerPack) || 3,
+      };
+      if (editingPackId) {
+        await api.put(`/admin/packs/${editingPackId}`, payload);
+        setMessage("Pack updated.");
+      } else {
+        await api.post("/admin/packs", payload);
+        setMessage("Pack created.");
+      }
+      setPackForm(emptyPackForm);
+      setEditingPackId(null);
+      loadAdminData();
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Could not save pack.");
+    }
+  };
+
+  const handleEditPack = (pack) => {
+    setEditingPackId(pack._id);
+    setPackForm({
+      name: pack.name || "",
+      description: pack.description || "",
+      cardsPerPack: pack.cardsPerPack ?? 3,
+    });
+    setMessage(`Editing pack: ${pack.name}`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDeletePack = async (id) => {
+    if (!window.confirm("Delete this pack? Only allowed if no shirts use it.")) {
+      return;
+    }
+    try {
+      await api.delete(`/admin/packs/${id}`);
+      setMessage("Pack deleted.");
+      if (editingPackId === id) {
+        setEditingPackId(null);
+        setPackForm(emptyPackForm);
+      }
+      loadAdminData();
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Could not delete pack.");
+    }
+  };
+
+  const handleCancelPackEdit = () => {
+    setEditingPackId(null);
+    setPackForm(emptyPackForm);
+    setMessage("Pack edit canceled.");
+  };
+
+  const handleGrantPacksToUser = async (e) => {
+    e.preventDefault();
+    if (!grantPackUserId || !grantPackPackId) {
+      setMessage("Select a user and a pack.");
+      return;
+    }
+    const count = Math.min(50, Math.max(1, parseInt(grantPackCount, 10) || 1));
+    try {
+      const res = await api.post(`/admin/users/${grantPackUserId}/grant-packs`, {
+        packId: grantPackPackId,
+        count,
+      });
+      setMessage(res.data?.message || "Bonus packs granted.");
+      setGrantPackCount(1);
+      loadAdminData({ clearMessage: false });
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Could not grant packs.");
+    }
+  };
 
   const categoriesBarSummary = useMemo(() => {
     const names = form.categories
@@ -233,7 +331,7 @@ export default function AdminDashboard() {
         setMessage("Shirt created successfully.");
       }
 
-      setForm(emptyForm);
+      setForm({ ...emptyForm });
       setEditingId(null);
       loadAdminData();
     } catch (error) {
@@ -251,6 +349,7 @@ export default function AdminDashboard() {
       image: shirt.image || "",
       rarity: shirt.rarity?._id || "",
       categories: shirt.categories?.map((c) => c._id) || [],
+      pack: shirt.pack?._id || shirt.pack || "",
     });
     setMessage(`Editing ${shirt.name}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -301,13 +400,6 @@ export default function AdminDashboard() {
   };
 
   const handleRemoveCollectionEntry = async (entryId) => {
-    if (
-      !window.confirm(
-        "Remove this shirt from that user's collection? This cannot be undone."
-      )
-    ) {
-      return;
-    }
     try {
       await api.delete(`/admin/collection-entries/${entryId}`);
       setMessage("Collection entry removed.");
@@ -438,6 +530,23 @@ export default function AdminDashboard() {
             </div>
 
             <div style={{ marginBottom: "10px" }}>
+              <label>Pack (each shirt belongs to exactly one pack)</label>
+              <br />
+              <select
+                value={form.pack}
+                onChange={(e) => setForm({ ...form, pack: e.target.value })}
+                required
+              >
+                <option value="">Select pack</option>
+                {adminPacks.map((p) => (
+                  <option key={p._id} value={p._id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: "10px" }}>
               <button
                 type="button"
                 onClick={() => setCategoriesExpanded((v) => !v)}
@@ -527,6 +636,133 @@ export default function AdminDashboard() {
 
       <div
         style={{
+          border: "1px solid #343434",
+          padding: "16px",
+          marginBottom: "24px",
+          borderRadius: "0.65rem",
+          background: "#141414",
+          color: "#ffffff",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "12px",
+            flexWrap: "wrap",
+            marginBottom: packSectionMinimized ? "0" : "16px",
+          }}
+        >
+          <h2 style={{ margin: 0, color: "#ffffff" }}>
+            {editingPackId ? "Edit pack" : "Create & manage packs"}
+          </h2>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => setPackSectionMinimized((v) => !v)}
+            aria-expanded={!packSectionMinimized}
+          >
+            {packSectionMinimized ? "Expand" : "Minimize"}
+          </button>
+        </div>
+
+        {!packSectionMinimized && (
+          <>
+            <form onSubmit={handleCreateOrUpdatePack} style={{ marginBottom: "20px" }}>
+              <div style={{ marginBottom: "10px" }}>
+                <label>Name</label>
+                <br />
+                <input
+                  type="text"
+                  value={packForm.name}
+                  onChange={(e) =>
+                    setPackForm({ ...packForm, name: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div style={{ marginBottom: "10px" }}>
+                <label>Description</label>
+                <br />
+                <textarea
+                  value={packForm.description}
+                  onChange={(e) =>
+                    setPackForm({ ...packForm, description: e.target.value })
+                  }
+                  rows="2"
+                />
+              </div>
+              <div style={{ marginBottom: "10px" }}>
+                <label>Cards per open</label>
+                <br />
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={packForm.cardsPerPack}
+                  onChange={(e) =>
+                    setPackForm({
+                      ...packForm,
+                      cardsPerPack: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <button type="submit" className="btn-primary">
+                {editingPackId ? "Update pack" : "Create pack"}
+              </button>
+              {editingPackId && (
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ marginLeft: "10px" }}
+                  onClick={handleCancelPackEdit}
+                >
+                  Cancel
+                </button>
+              )}
+            </form>
+
+            <h3 style={{ color: "#ffffff", marginTop: 0 }}>Existing packs</h3>
+            {adminPacks.length === 0 && <p>No packs yet.</p>}
+            {adminPacks.map((p) => (
+              <div
+                key={p._id}
+                style={{
+                  border: "1px solid #343434",
+                  padding: "12px",
+                  marginBottom: "10px",
+                  borderRadius: "0.5rem",
+                  background: "#0f0f10",
+                }}
+              >
+                <strong>{p.name}</strong>
+                <p style={{ margin: "0.35rem 0", opacity: 0.9 }}>
+                  {p.shirtPool?.length ?? 0} shirts · {p.cardsPerPack ?? 3} cards
+                  per open
+                </p>
+                <p style={{ margin: "0 0 8px", fontSize: "0.9rem" }}>
+                  {p.description}
+                </p>
+                <button type="button" onClick={() => handleEditPack(p)}>
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  style={{ marginLeft: "10px" }}
+                  onClick={() => handleDeletePack(p._id)}
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+
+      <div
+        style={{
           marginBottom: "24px",
           border: "2px solid #3a3a3c",
           borderRadius: "0.75rem",
@@ -604,6 +840,10 @@ export default function AdminDashboard() {
                     <p><strong>Brand:</strong> {shirt.brand}</p>
                     <p><strong>Rarity:</strong> {shirt.rarity?.name || "Unknown"}</p>
                     <p>
+                      <strong>Pack:</strong>{" "}
+                      {shirt.pack?.name || "—"}
+                    </p>
+                    <p>
                       <strong>Categories:</strong>{" "}
                       {shirt.categories?.length
                         ? shirt.categories.map((c) => c.name).join(", ")
@@ -626,6 +866,104 @@ export default function AdminDashboard() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      <div
+        style={{
+          marginTop: "24px",
+          border: "2px solid #3a3a3c",
+          borderRadius: "0.75rem",
+          overflow: "hidden",
+          background: "#161616",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "12px",
+            flexWrap: "wrap",
+            padding: "12px 16px",
+            background: "#1e1e20",
+            borderBottom: grantPackSectionMinimized ? "none" : "1px solid #343434",
+          }}
+        >
+          <h2 style={{ margin: 0, color: "#ffffff" }}>Grant pack opens to user</h2>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => setGrantPackSectionMinimized((v) => !v)}
+            aria-expanded={!grantPackSectionMinimized}
+          >
+            {grantPackSectionMinimized ? "Expand" : "Minimize"}
+          </button>
+        </div>
+        {!grantPackSectionMinimized && (
+          <div style={{ padding: "16px", background: "#0f0f10", color: "#ffffff" }}>
+            <p style={{ margin: "0 0 14px", fontSize: "0.9rem", opacity: 0.9 }}>
+              Adds bonus pack opens. The user can open that pack type until the
+              grants are used (in addition to two random daily drops).
+            </p>
+            <form
+              onSubmit={handleGrantPacksToUser}
+              style={{ display: "grid", gap: "12px", maxWidth: "420px" }}
+            >
+              <div>
+                <label htmlFor="grant-pack-user">User</label>
+                <br />
+                <select
+                  id="grant-pack-user"
+                  value={grantPackUserId}
+                  onChange={(e) => setGrantPackUserId(e.target.value)}
+                  required
+                  style={{ width: "100%", marginTop: "4px" }}
+                >
+                  <option value="">Select user</option>
+                  {users.map((u) => (
+                    <option key={u._id} value={u._id}>
+                      {u.username}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="grant-pack-pack">Pack</label>
+                <br />
+                <select
+                  id="grant-pack-pack"
+                  value={grantPackPackId}
+                  onChange={(e) => setGrantPackPackId(e.target.value)}
+                  required
+                  style={{ width: "100%", marginTop: "4px" }}
+                >
+                  <option value="">Select pack</option>
+                  {adminPacks.map((p) => (
+                    <option key={p._id} value={p._id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="grant-pack-count">Count (max 50)</label>
+                <br />
+                <input
+                  id="grant-pack-count"
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={grantPackCount}
+                  onChange={(e) => setGrantPackCount(e.target.value)}
+                  style={{ width: "100%", marginTop: "4px" }}
+                />
+              </div>
+              <button type="submit" className="btn-primary">
+                Grant pack opens
+              </button>
+            </form>
           </div>
         )}
       </div>

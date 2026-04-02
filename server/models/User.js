@@ -1,5 +1,28 @@
 import mongoose from "mongoose";
 
+const dailySlotSchema = new mongoose.Schema(
+  {
+    pack: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Pack",
+      required: true,
+    },
+    opened: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
+const bonusOpenSchema = new mongoose.Schema(
+  {
+    pack: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Pack",
+      required: true,
+    },
+  },
+  { _id: false }
+);
+
 const userSchema = new mongoose.Schema(
   {
     username: {
@@ -17,6 +40,11 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "user"],
       default: "user",
     },
+    dailyPackState: {
+      utcDay: { type: String, default: "" },
+      slots: { type: [dailySlotSchema], default: [] },
+    },
+    bonusPackOpens: { type: [bonusOpenSchema], default: [] },
   },
   { timestamps: true }
 );

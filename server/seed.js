@@ -58,9 +58,36 @@ const seedData = async () => {
       categories.map((category) => [category.name, category._id])
     );
 
+    const packs = await Pack.insertMany([
+      {
+        name: "Street Rotation",
+        description:
+          "Everyday icons, sport, and streetwear graphics—five tees per rotation.",
+        cardsPerPack: 3,
+      },
+      {
+        name: "Stage & Stereo",
+        description: "Bands, albums, and tour-poster energy.",
+        cardsPerPack: 3,
+      },
+      {
+        name: "Geek Box",
+        description: "Comics, games, sci-fi, and anime drops.",
+        cardsPerPack: 3,
+      },
+      {
+        name: "Archive Picks",
+        description: "Deep cuts, art prints, and grail-tier pieces.",
+        cardsPerPack: 3,
+      },
+    ]);
+
+    const packIds = packs.map((p) => p._id);
+    const packForIndex = (i) => packIds[Math.floor(i / 5)];
+
     // Shirt art sourced from Imgur album "T-Shirt Project":
     // https://imgur.com/a/aniTz4t
-    const shirts = await Shirt.insertMany([
+    const shirtDocs = [
       {
         name: "Batman Shirt",
         brand: "T-Shirt Project",
@@ -213,15 +240,11 @@ const seedData = async () => {
         rarity: rarityMap["Common"],
         categories: [categoryMap["Gaming"], categoryMap["Vintage"]],
       },
-    ]);
+    ];
 
-    const starterPack = await Pack.create({
-      name: "Starter Drip Pack",
-      description:
-        "Graphic tees from the T-Shirt Project Imgur set—mixed drops every open.",
-      shirtPool: shirts.map((shirt) => shirt._id),
-      cardsPerPack: 3,
-    });
+    const shirts = await Shirt.insertMany(
+      shirtDocs.map((doc, i) => ({ ...doc, pack: packForIndex(i) }))
+    );
 
     const hashedAdminPassword = await bcrypt.hash("admin123", 10);
     const hashedUserPassword = await bcrypt.hash("user123", 10);
@@ -244,7 +267,9 @@ const seedData = async () => {
     console.log(`Created ${rarities.length} rarities`);
     console.log(`Created ${categories.length} categories`);
     console.log(`Created ${shirts.length} shirts`);
-    console.log(`Created 1 pack: ${starterPack.name}`);
+    console.log(
+      `Created ${packs.length} packs: ${packs.map((p) => p.name).join(", ")}`
+    );
     console.log(`Created users: ${adminUser.username}, ${demoUser.username}`);
 
     process.exit();
