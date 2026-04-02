@@ -6,6 +6,7 @@ import Pack from "../models/Pack.js";
 import Category from "../models/Category.js";
 import Rarity from "../models/Rarity.js";
 import CollectionEntry from "../models/CollectionEntry.js";
+import { cancelPendingTradesContainingEntryId } from "../controllers/tradeController.js";
 
 const router = express.Router();
 
@@ -144,6 +145,7 @@ router.delete("/collection-entries/:id", async (req, res) => {
     if (!entry) {
       return res.status(404).json({ message: "Collection entry not found" });
     }
+    await cancelPendingTradesContainingEntryId(entry._id);
     res.json({ message: "Removed from user collection" });
   } catch (error) {
     res.status(500).json({ message: error.message });

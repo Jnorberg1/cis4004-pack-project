@@ -12,16 +12,18 @@ const tradeSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    fromEntry: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "CollectionEntry",
-      required: true,
-    },
-    toEntry: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "CollectionEntry",
-      required: true,
-    },
+    fromEntries: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "CollectionEntry",
+      },
+    ],
+    toEntries: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "CollectionEntry",
+      },
+    ],
     status: {
       type: String,
       enum: ["pending", "accepted", "declined", "cancelled"],

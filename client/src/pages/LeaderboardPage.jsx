@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../api/api";
-import ShirtImage from "../components/ShirtImage";
 
 export default function LeaderboardPage() {
   const [leaders, setLeaders] = useState([]);
@@ -21,34 +21,41 @@ export default function LeaderboardPage() {
   return (
     <div style={{ padding: "20px" }}>
       <h1>Leaderboard</h1>
+      <p style={{ marginBottom: "1rem", opacity: 0.9, maxWidth: "520px" }}>
+        Collectors ranked by how many shirts they own. Select someone to browse
+        their shelf and start a trade.
+      </p>
 
-      {leaders.length === 0 && <p>No leaderboard data yet.</p>}
+      {leaders.length === 0 && <p>No users yet.</p>}
 
-      {leaders.map((entry, index) => (
-        <div
-          key={entry._id || index}
-          style={{
-            border: "1px solid #ccc",
-            padding: "12px",
-            marginBottom: "12px",
-          }}
-        >
-          <div className="collection-item-row">
-            <ShirtImage src={entry.imageUrl} alt={entry.shirtName} />
-            <div>
-              <h3>
-                #{index + 1} {entry.shirtName}
-              </h3>
-              <p><strong>Brand:</strong> {entry.brand}</p>
-              <p><strong>Rarity:</strong> {entry.rarityName || "Unknown"}</p>
-              <p><strong>Value Score:</strong> {entry.valueScore}</p>
-              <p><strong>Total Pulls:</strong> {entry.pullCount}</p>
-              <p><strong>Favorites:</strong> {entry.favoriteCount}</p>
-              <p>{entry.description}</p>
-            </div>
-          </div>
-        </div>
-      ))}
+      <ul className="list" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+        {leaders.map((row, index) => (
+          <li key={row.userId || row._id || index}>
+            <Link
+              to={`/leaderboard/user/${encodeURIComponent(row.username)}`}
+              className="list-item"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: "1rem",
+                textDecoration: "none",
+                color: "inherit",
+              }}
+            >
+              <span>
+                <strong>#{index + 1}</strong> {row.username}
+                {row.role === "admin" ? (
+                  <span style={{ opacity: 0.7, fontSize: "0.85rem" }}> · admin</span>
+                ) : null}
+              </span>
+              <span style={{ fontWeight: 700, color: "var(--primary)" }}>
+                {row.shirtCount} {row.shirtCount === 1 ? "shirt" : "shirts"}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

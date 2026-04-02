@@ -2,33 +2,92 @@ import User from "../models/User.js";
 import Trade from "../models/Trade.js";
 import CollectionEntry from "../models/CollectionEntry.js";
 
+const entryPopulate = {
+  path: "shirt",
+  populate: [{ path: "rarity" }, { path: "categories" }],
+};
+
 const populateTrade = [
   { path: "fromUser", select: "username" },
   { path: "toUser", select: "username" },
-  {
-    path: "fromEntry",
-    populate: {
-      path: "shirt",
-      populate: [{ path: "rarity" }, { path: "categories" }],
-    },
-  },
-  {
-    path: "toEntry",
-    populate: {
-      path: "shirt",
-      populate: [{ path: "rarity" }, { path: "categories" }],
-    },
-  },
+  { path: "fromEntries", populate: entryPopulate },
+  { path: "toEntries", populate: entryPopulate },
 ];
+
+function normalizeIdArray(raw) {
+  if (raw == null) return [];
+  const list = Array.isArray(raw) ? raw : [raw];
+  return [...new Set(list.map((id) => String(id)).filter(Boolean))];
+}
+
+async function entriesOwnedByUser(entryIds, userId) {
+  if (entryIds.length === 0) return [];
+  return CollectionEntry.find({
+    _id: { $in: entryIds },
+    user: userId,
+  });
+}
+
+/** Each fromEntry must exist and belong to fromUser; each toEntry to toUser. */
+async function pendingTradeInventoryIsValid(trade) {
+  for (const entryId of trade.fromEntries || []) {
+    const doc = await CollectionEntry.findById(entryId);
+    if (!doc) return false;
+    if (doc.user.toString() !== trade.fromUser.toString()) return false;
+  }
+  for (const entryId of trade.toEntries || []) {
+    const doc = await CollectionEntry.findById(entryId);
+    if (!doc) return false;
+    if (doc.user.toString() !== trade.toUser.toString()) return false;
+  }
+  return true;
+}
+
+export async function cancelInvalidPendingTradesForUsers(userIds) {
+  const unique = [...new Set(userIds.map((id) => String(id)))].filter(Boolean);
+  if (unique.length === 0) return;
+
+  const trades = await Trade.find({
+    status: "pending",
+    $or: [{ fromUser: { $in: unique } }, { toUser: { $in: unique } }],
+  });
+
+  for (const trade of trades) {
+    const ok = await pendingTradeInventoryIsValid(trade);
+    if (!ok) {
+      trade.status = "cancelled";
+      await trade.save();
+    }
+  }
+}
+
+/** Call when a collection entry is removed — any pending trade listing it is cancelled. */
+export async function cancelPendingTradesContainingEntryId(entryId) {
+  if (!entryId) return;
+  await Trade.updateMany(
+    {
+      status: "pending",
+      $or: [{ fromEntries: entryId }, { toEntries: entryId }],
+    },
+    { $set: { status: "cancelled" } }
+  );
+}
 
 export const createTrade = async (req, res) => {
   try {
-    const { toUsername, myEntryId, theirEntryId } = req.body;
+    const { toUsername, myEntryIds, theirEntryIds } = req.body;
 
-    if (!toUsername || !myEntryId || !theirEntryId) {
-      return res
-        .status(400)
-        .json({ message: "toUsername, myEntryId, and theirEntryId are required" });
+    if (!toUsername?.trim()) {
+      return res.status(400).json({ message: "toUsername is required" });
+    }
+
+    const myIds = normalizeIdArray(myEntryIds);
+    const theirIds = normalizeIdArray(theirEntryIds);
+
+    if (myIds.length === 0 && theirIds.length === 0) {
+      return res.status(400).json({
+        message: "Offer at least one shirt on your side, their side, or both",
+      });
     }
 
     const toUser = await User.findOne({
@@ -43,47 +102,26 @@ export const createTrade = async (req, res) => {
       return res.status(400).json({ message: "You cannot trade with yourself" });
     }
 
-    const myEntry = await CollectionEntry.findOne({
-      _id: myEntryId,
-      user: req.user.id,
-    });
-
-    if (!myEntry) {
-      return res.status(404).json({ message: "Your collection item was not found" });
+    const myEntries = await entriesOwnedByUser(myIds, req.user.id);
+    if (myEntries.length !== myIds.length) {
+      return res.status(404).json({
+        message: "One or more of your selected items were not found",
+      });
     }
 
-    const theirEntry = await CollectionEntry.findOne({
-      _id: theirEntryId,
-      user: toUser._id,
-    });
-
-    if (!theirEntry) {
-      return res
-        .status(404)
-        .json({ message: "Their collection item was not found or does not belong to that user" });
-    }
-
-    const existing = await Trade.findOne({
-      status: "pending",
-      $or: [
-        { fromEntry: myEntryId },
-        { toEntry: myEntryId },
-        { fromEntry: theirEntryId },
-        { toEntry: theirEntryId },
-      ],
-    });
-
-    if (existing) {
-      return res.status(409).json({
-        message: "One of these items is already part of another pending trade",
+    const theirEntries = await entriesOwnedByUser(theirIds, toUser._id);
+    if (theirEntries.length !== theirIds.length) {
+      return res.status(404).json({
+        message:
+          "One or more of their selected items were not found or do not belong to that user",
       });
     }
 
     const trade = await Trade.create({
       fromUser: req.user.id,
       toUser: toUser._id,
-      fromEntry: myEntry._id,
-      toEntry: theirEntry._id,
+      fromEntries: myIds,
+      toEntries: theirIds,
     });
 
     const populated = await Trade.findById(trade._id).populate(populateTrade);
@@ -97,6 +135,8 @@ export const createTrade = async (req, res) => {
 
 export const getMyTrades = async (req, res) => {
   try {
+    await cancelInvalidPendingTradesForUsers([req.user.id]);
+
     const trades = await Trade.find({
       $or: [{ fromUser: req.user.id }, { toUser: req.user.id }],
     })
@@ -124,49 +164,44 @@ export const acceptTrade = async (req, res) => {
       });
     }
 
-    const fromEntry = await CollectionEntry.findById(trade.fromEntry);
-    const toEntry = await CollectionEntry.findById(trade.toEntry);
-
-    if (
-      !fromEntry ||
-      !toEntry ||
-      fromEntry.user.toString() !== trade.fromUser.toString() ||
-      toEntry.user.toString() !== trade.toUser.toString()
-    ) {
+    const valid = await pendingTradeInventoryIsValid(trade);
+    if (!valid) {
+      trade.status = "cancelled";
+      await trade.save();
       return res.status(409).json({
-        message: "Items no longer match this trade; cancel it and try again",
+        message:
+          "This trade was cancelled because an item is missing or no longer in someone’s collection.",
       });
     }
 
-    const dup = await Trade.findOne({
-      _id: { $ne: trade._id },
-      status: "pending",
-      $or: [
-        { fromEntry: trade.fromEntry },
-        { toEntry: trade.fromEntry },
-        { fromEntry: trade.toEntry },
-        { toEntry: trade.toEntry },
-      ],
-    });
+    const fromIds = (trade.fromEntries || []).map((id) => id.toString());
+    const toIds = (trade.toEntries || []).map((id) => id.toString());
 
-    if (dup) {
-      return res.status(409).json({
-        message: "Another pending trade conflicts with these items",
-      });
-    }
+    const fromDocs =
+      fromIds.length > 0
+        ? await CollectionEntry.find({ _id: { $in: fromIds } })
+        : [];
+    const toDocs =
+      toIds.length > 0 ? await CollectionEntry.find({ _id: { $in: toIds } }) : [];
 
-    const originalFromOwner = fromEntry.user;
-    const originalToOwner = toEntry.user;
-
-    fromEntry.user = trade.toUser;
-    await fromEntry.save();
+    const rolledBack = [];
 
     try {
-      toEntry.user = trade.fromUser;
-      await toEntry.save();
+      for (const doc of fromDocs) {
+        rolledBack.push({ doc, prevOwner: doc.user });
+        doc.user = trade.toUser;
+        await doc.save();
+      }
+      for (const doc of toDocs) {
+        rolledBack.push({ doc, prevOwner: doc.user });
+        doc.user = trade.fromUser;
+        await doc.save();
+      }
     } catch (innerError) {
-      fromEntry.user = originalFromOwner;
-      await fromEntry.save();
+      for (const { doc, prevOwner } of rolledBack.reverse()) {
+        doc.user = prevOwner;
+        await doc.save();
+      }
       throw innerError;
     }
 

@@ -1,60 +1,36 @@
 import express from "express";
+import User from "../models/User.js";
 import CollectionEntry from "../models/CollectionEntry.js";
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const leaderboard = await CollectionEntry.aggregate([
-      {
-        $group: {
-          _id: "$shirt",
-          pullCount: { $sum: 1 },
-          favoriteCount: {
-            $sum: {
-              $cond: ["$isFavorite", 1, 0],
-            },
-          },
-        },
-      },
-      { $sort: { pullCount: -1, favoriteCount: -1 } },
-      { $limit: 10 },
+    const entryCollection = CollectionEntry.collection.name;
+
+    const leaderboard = await User.aggregate([
       {
         $lookup: {
-          from: "shirts",
+          from: entryCollection,
           localField: "_id",
-          foreignField: "_id",
-          as: "shirt",
-        },
-      },
-      { $unwind: "$shirt" },
-      {
-        $lookup: {
-          from: "rarities",
-          localField: "shirt.rarity",
-          foreignField: "_id",
-          as: "rarity",
+          foreignField: "user",
+          as: "entries",
         },
       },
       {
-        $unwind: {
-          path: "$rarity",
-          preserveNullAndEmptyArrays: true,
+        $addFields: {
+          shirtCount: { $size: "$entries" },
         },
       },
       {
         $project: {
-          _id: 1,
-          pullCount: 1,
-          favoriteCount: 1,
-          shirtName: "$shirt.name",
-          brand: "$shirt.brand",
-          description: "$shirt.description",
-          valueScore: "$shirt.valueScore",
-          rarityName: "$rarity.name",
-          imageUrl: "$shirt.image",
+          userId: "$_id",
+          username: 1,
+          role: 1,
+          shirtCount: 1,
         },
       },
+      { $sort: { shirtCount: -1, username: 1 } },
     ]);
 
     res.json(leaderboard);

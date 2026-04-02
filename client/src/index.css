@@ -93,8 +93,8 @@ p {
 }
 
 .navbar-links a:hover,
-.btn-primary:hover,
-.btn-secondary:hover {
+.btn-primary:hover:not(:disabled),
+.btn-secondary:hover:not(:disabled) {
   transform: translateY(-1px);
 }
 
@@ -149,6 +149,18 @@ input {
 .btn-primary {
   background: var(--primary);
   color: var(--black);
+}
+
+.btn-primary:disabled {
+  background: #3a3a3c;
+  color: #8a8a8d;
+  border-color: #3a3a3c;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.btn-primary:disabled:hover {
+  transform: none;
 }
 
 .btn-secondary {
@@ -251,4 +263,94 @@ input {
   font-weight: 700;
   font-size: 0.9rem;
   letter-spacing: 0.02em;
+}
+
+.trading-top-bar {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  margin-bottom: 2rem;
+  align-items: stretch;
+}
+
+.trading-trades-panel {
+  padding: 1rem;
+  border: 1px solid #343434;
+  border-radius: 0.65rem;
+  max-height: min(55vh, 520px);
+  overflow-y: auto;
+  min-height: 140px;
+}
+
+.trading-trades-subsection {
+  margin-bottom: 0.85rem;
+}
+
+.trading-trades-subsection:last-child {
+  margin-bottom: 0;
+}
+
+.trading-collapse-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 0.5rem;
+  padding: 0.45rem 0.55rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #3a3a3a;
+  border-radius: 0.45rem;
+  background: #1e1e1f;
+  color: var(--white);
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.trading-collapse-toggle:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.trading-collapse-toggle__chevron {
+  flex-shrink: 0;
+  opacity: 0.85;
+  font-size: 0.75rem;
+}
+
+.trade-card-date {
+  font-size: 0.78rem;
+  opacity: 0.65;
+  margin-top: 0.15rem;
+}
+
+.trading-find-panel {
+  padding: 1rem;
+  border: 1px solid #343434;
+  border-radius: 0.65rem;
+}
+
+.trading-offer-panel {
+  border: 1px solid #343434;
+  border-radius: 0.65rem;
+  padding: 1rem;
+  margin-bottom: 2rem;
+}
+
+.trading-propose-row {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #2f2f2f;
+}
+
+.collection-items-panel {
+  border: 1px solid #343434;
+  border-radius: 0.65rem;
+  padding: 1rem;
+}
+
+.collection-items-panel .collection-card:last-child {
+  margin-bottom: 0;
 }

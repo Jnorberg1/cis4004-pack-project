@@ -122,48 +122,52 @@ export default function CollectionPage() {
         </p>
       )}
 
-      {sortedFiltered.map((item) => {
-        const categoryLabel =
-          item.shirt?.categories?.map((c) => c.name).filter(Boolean).join(", ") || "—";
+      {sortedFiltered.length > 0 && (
+        <div className="collection-items-panel">
+          {sortedFiltered.map((item) => {
+            const categoryLabel =
+              item.shirt?.categories?.map((c) => c.name).filter(Boolean).join(", ") || "—";
 
-        return (
-        <div
-          key={item._id}
-          className={`collection-card${item.singleStitch ? " collection-card--single-stitch" : ""}`}
-        >
-          <div className="collection-item-row">
-            <ShirtImage
-              src={item.shirt?.image}
-              alt={item.shirt?.name || "Shirt"}
-            />
-            <div>
-              <h3>{item.shirt?.name || "Unknown Shirt"}</h3>
-              {item.singleStitch && (
-                <p className="collection-card__single-stitch-badge">Single stitch</p>
-              )}
-              <p><strong>Categories:</strong> {categoryLabel}</p>
-              <p><strong>Tag:</strong> {item.tag || "Gildan"}</p>
-              <p><strong>Description:</strong> {item.shirt?.description || "No description"}</p>
-              {item.isFavorite && (
-                <p className="collection-card__favorite-badge">Favorite</p>
-              )}
+            return (
+            <div
+              key={item._id}
+              className={`collection-card${item.singleStitch ? " collection-card--single-stitch" : ""}`}
+            >
+              <div className="collection-item-row">
+                <ShirtImage
+                  src={item.shirt?.image}
+                  alt={item.shirt?.name || "Shirt"}
+                />
+                <div>
+                  <h3>{item.shirt?.name || "Unknown Shirt"}</h3>
+                  {item.singleStitch && (
+                    <p className="collection-card__single-stitch-badge">Single stitch</p>
+                  )}
+                  <p><strong>Categories:</strong> {categoryLabel}</p>
+                  <p><strong>Tag:</strong> {item.tag || "Gildan"}</p>
+                  <p><strong>Description:</strong> {item.shirt?.description || "No description"}</p>
+                  {item.isFavorite && (
+                    <p className="collection-card__favorite-badge">Favorite</p>
+                  )}
 
-              <button type="button" onClick={() => toggleFavorite(item._id)}>
-                {item.isFavorite ? "Remove Favorite" : "Add to Favorites"}
-              </button>
+                  <button type="button" onClick={() => toggleFavorite(item._id)}>
+                    {item.isFavorite ? "Remove Favorite" : "Add to Favorites"}
+                  </button>
 
-              <button
-                type="button"
-                onClick={() => deleteCollectionItem(item._id)}
-                style={{ marginLeft: "10px" }}
-              >
-                Remove From Collection
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteCollectionItem(item._id)}
+                    style={{ marginLeft: "10px" }}
+                  >
+                    Remove From Collection
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+            );
+          })}
         </div>
-        );
-      })}
+      )}
     </div>
   );
 }

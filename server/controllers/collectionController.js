@@ -1,5 +1,6 @@
 import CollectionEntry from "../models/CollectionEntry.js";
 import User from "../models/User.js";
+import { cancelPendingTradesContainingEntryId } from "./tradeController.js";
 import "../models/Rarity.js";
 import "../models/Category.js";
 
@@ -92,6 +93,8 @@ export const deleteCollectionItem = async (req, res) => {
     if (!item) {
       return res.status(404).json({ message: "Collection item not found" });
     }
+
+    await cancelPendingTradesContainingEntryId(item._id);
 
     res.json({ message: "Collection item deleted" });
   } catch (error) {
