@@ -1,17 +1,17 @@
 # PackThreads
 
-PackThreads is a MERN stack web application where users open virtual graphic T-shirt packs, collect shirts of different rarities, save favorites, and view collection data. Users can propose trades with other collectors; admins manage the shirt and pack data that powers the app.
+PackThreads is a MERN stack web application where users open virtual graphic T-shirt packs, collect shirts of different rarities, save favorites, and view collection data. Admins can manage the shirt and pack data that powers the app.
 
 ## Project Overview
 
-Stack:
+This project was built with the MERN stack:
 
 - MongoDB
 - Express.js
-- React (Vite)
+- React
 - Node.js
 
-Features:
+The app currently includes:
 
 - User registration and login (JWT)
 - Admin and standard user roles
@@ -22,88 +22,53 @@ Features:
 - User-to-user trading (create offers, accept, decline, cancel)
 - Admin routes for shirt and pack management
 
+
 ## Team Notes
 
 This repository is meant for collaborative development. Everyone on the team should:
 
-- Pull the latest version before starting work
-- Keep a local `server/.env` (never commit secrets)
-- Commit often with clear messages
-- Coordinate before editing the same files
+- pull the latest version before starting work
+- create their own local `.env` file
+- avoid pushing secrets like database credentials
+- commit often with clear messages
+- communicate before editing the same files
 
 ## Quick Start
 
-### 1. Environment
+1. Create your server env file:
 
-Create `server/.env` with:
+```bash
+cp server/.env.example server/.env
+```
+
+If you do not have an example file, create `server/.env` manually with:
 
 ```env
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 ```
 
-Optional:
-
-```env
-PORT=5000
-```
-
-If the repo includes `server/.env.example`, you can copy it instead of creating the file by hand.
-
-### 2. Install dependencies
+2. Install dependencies:
 
 ```bash
 npm install --prefix server
 npm install --prefix client
-```
 
-### 3. Seed the database (optional)
-
-With MongoDB reachable using `MONGO_URI`:
-
-```bash
+3. Run seed:
 npm run seed --prefix server
-```
 
-### 4. Run the app
-
-**Linux / macOS / Git Bash / WSL** — from the repo root:
-
+4. Start frontend + backend together:
 ```bash
 ./start-dev.sh
 ```
 
-This starts the API with nodemon, runs the Vite dev server, and passes `--host 0.0.0.0` to the client so the UI is reachable from other interfaces (e.g. WSL networking).
+This starts:
 
-**Windows (PowerShell or CMD)** — use two terminals from the repo root:
+- backend on port `5000`
+- frontend on Vite default port (usually `5173`; if busy, Vite picks the next one)
+- frontend bound to `0.0.0.0` so it is reachable from WSL network interfaces
 
-```bash
-npm --prefix server run dev
-```
-
-```bash
-npm --prefix client run dev
-```
-
-The client calls `http://localhost:5000/api` by default (`client/src/api/api.js`), so keep the server on port `5000` unless you change both.
-
-**URLs**
-
-- API: `http://localhost:5000` (root responds with a short status JSON)
-- Frontend: Vite default `http://localhost:5173` (next port if that one is busy)
-
-## API routes (summary)
-
-| Prefix | Purpose |
-|--------|---------|
-| `/api/auth` | Register, login |
-| `/api/packs` | Pack opening |
-| `/api/collection` | Collection and favorites |
-| `/api/leaderboard` | Leaderboard data |
-| `/api/trades` | Create and manage trades |
-| `/api/admin` | Admin shirt/pack management |
-
-## Folder structure
+## Folder Structure
 
 ```text
 cis4004-pack-project/
@@ -179,4 +144,3 @@ cis4004-pack-project/
   .gitignore
   README.md
   start-dev.sh
-```
